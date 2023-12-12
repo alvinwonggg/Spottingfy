@@ -8,6 +8,7 @@
 #include <chrono>
 #include <fstream>
 #include <sstream>
+#include "csv.hpp"
 
 using namespace std;
 
@@ -18,13 +19,17 @@ class Song {
 
     /*=============================CONSTRUCTORS======================================================*/
         Song(string songArtist, string songTitle, string acousticness, string danceability, string duration_ms,
-             string energy, string instrumentalness, string key, string liveliness, string loudness,
+             string energy, string instrumentalness, string key, string liveness, string loudness,
              string mode, string speechiness, string tempo, string valence);
         Song(vector<string> variables);
 
     /*==================================MANIPULATORS===================================================*/
         static vector<Song> mergeSort(vector<Song> &dataBase, const string& topic);
         static vector<Song> quickSort(vector<Song> &dataBase, const string& topic);
+        static vector<Song> bucketSort(vector<Song> &dataBase, const string& topic);
+        static vector<Song> countingSort(vector<Song> &dataBase, const string& topic);
+        static vector<Song> standardSort(vector<Song> &dataBase, const string& topic);
+        static vector<Song> sortHelperFunc(vector<Song> &dataBase, const string& topic);
         static int binarySearch(vector<Song> &dataBase, const string &topic, const string& targetValue);
 
         static vector<Song> createPlayList(const string &fileName);

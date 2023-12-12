@@ -1,8 +1,7 @@
 #include "Song.h"
-#include "csv.hpp"
 
 Song::Song(string songTitle, string songArtist, string acousticness, string danceability, string duration_ms,
-           string energy, string instrumentalness, string key, string liveliness, string loudness,
+           string energy, string instrumentalness, string key, string liveness, string loudness,
            string mode, string speechiness, string tempo, string valence) {
     attributeVals["songArtist"] = songArtist;
     attributeVals["songTitle"] = songTitle;
@@ -12,7 +11,7 @@ Song::Song(string songTitle, string songArtist, string acousticness, string danc
     attributeVals["energy"] = energy;
     attributeVals["instrumentalness"] = instrumentalness;
     attributeVals["key"] = key;
-    attributeVals["liveliness"] = liveliness;
+    attributeVals["liveness"] = liveness;
     attributeVals["loudness"] = loudness;
     attributeVals["mode"] = mode;
     attributeVals["speechiness"] = speechiness;
@@ -30,7 +29,7 @@ Song::Song(vector<string> variables) {
     attributeVals["energy"] = variables[5];
     attributeVals["instrumentalness"] = variables[6];
     attributeVals["key"] = variables[7];
-    attributeVals["liveliness"] = variables[8];
+    attributeVals["liveness"] = variables[8];
     attributeVals["loudness"] = variables[9];
     attributeVals["mode"] = variables[10];
     attributeVals["speechiness"] = variables[11];
@@ -78,6 +77,7 @@ vector<Song> Song::mergeSort(vector<Song> &dataBase, const string& topic) {
     return result;
 }
 
+
 vector<Song> Song::quickSort(vector<Song> &dataBase, const string& topic) {
     if (dataBase.size() <= 1) {
         return dataBase;
@@ -106,6 +106,102 @@ vector<Song> Song::quickSort(vector<Song> &dataBase, const string& topic) {
     return sortedSongs;
 }
 
+
+vector<Song> Song::bucketSort(vector<Song> &dataBase, const string &topic) {
+    auto start = chrono::high_resolution_clock::now();
+    cout << topic << " Bucket Sort started. ";
+
+    // Create buckets
+    const int numBuckets = 1500;  // You can adjust the number of buckets based on your data
+    vector<vector<Song>> buckets(numBuckets);
+
+    // Place elements into buckets
+    for (Song mySong : dataBase) {
+        try {
+            int bucketIndex = static_cast<int>(stod(mySong.attributeVals[topic]) * (numBuckets - 1));
+            buckets[bucketIndex].push_back(mySong);
+        } catch(const std::invalid_argument& e) {
+            cerr << "Invalid argument error: " << e.what() << mySong.attributeVals[topic];
+            return {};
+        }
+    }
+
+    // Sort each bucket (using insertion sort in this case)
+    for (auto& bucket : buckets) {
+        sort(bucket.begin(), bucket.end(), [topic](const Song& lhs, const Song& rhs) {
+            double lhsValue = stod(lhs.attributeVals.at(topic));
+            double rhsValue = stod(rhs.attributeVals.at(topic));
+            return lhsValue < rhsValue;
+        });
+    }
+
+    // Concatenate sorted buckets back into the original array
+    dataBase.clear();
+    for (const auto& bucket : buckets) {
+        dataBase.insert(dataBase.end(), bucket.begin(), bucket.end());
+    }
+
+    auto end = chrono::high_resolution_clock::now();
+    auto duration = chrono::duration_cast<chrono::microseconds>(end - start);
+    cout << "Sort finished. Time taken in seconds: " << static_cast<double>(duration.count())/1000000.0 << endl;
+    return dataBase;
+}
+
+vector<Song> Song::countingSort(vector<Song> &dataBase, const string& topic) {
+    if(topic == "key") {
+        auto start = chrono::high_resolution_clock::now();
+        cout << topic << " Counting Sort started. ";
+
+        vector<vector<Song>> countingList;
+        int uniqueKeyVals = 12;
+        for(int i = 0; i < uniqueKeyVals; i++) { countingList.emplace_back(); }
+
+        for(Song mySong : dataBase) {
+            int index = stoi(mySong.attributeVals["key"]);
+            countingList[index].push_back(mySong);
+        }
+
+        dataBase.clear();
+        for (const auto& count : countingList) {
+            dataBase.insert(dataBase.end(), count.begin(), count.end());
+        }
+        auto end = chrono::high_resolution_clock::now();
+        auto duration = chrono::duration_cast<chrono::microseconds>(end - start);
+        cout << "Sort finished. Time taken in seconds: " << static_cast<double>(duration.count())/1000000.0 << endl;
+        return dataBase;
+    } else {
+        cerr << "Wrong topic input, input empty";
+        return {};
+    }
+}
+
+
+vector<Song> Song::standardSort(vector<Song> &dataBase, const string &topic) {
+    auto start = chrono::high_resolution_clock::now();
+    cout << topic << " Std Sort started. " ;
+    sort(dataBase.begin(), dataBase.end(), [topic](const Song& lhs, const Song& rhs) {
+        double lhsValue = stod(lhs.attributeVals.at(topic));
+        double rhsValue = stod(rhs.attributeVals.at(topic));
+        return lhsValue < rhsValue;
+    });
+
+    auto end = chrono::high_resolution_clock::now();
+    auto duration = chrono::duration_cast<chrono::microseconds>(end - start);
+    cout << "Sort finished. Time taken in seconds: " << static_cast<double>(duration.count())/1000000.0 << endl;
+    return dataBase;
+}
+
+vector<Song> Song::sortHelperFunc(vector<Song> &dataBase, const string &topic) {
+
+    if(topic == "acousticness" || topic == "danceability" || topic == "energy" || topic == "liveness" || topic == "speechiness" || topic == "valence") {
+        dataBase = bucketSort(dataBase,topic);
+    } else if(topic == "key") {
+        dataBase = countingSort(dataBase,topic);
+    } else {
+        dataBase = standardSort(dataBase,topic);
+    }
+    return dataBase;
+}
 
 
 /*=============================PLAYLIST FUNCTION IMPLEMENTATION====================================*/
@@ -200,28 +296,16 @@ void Song::addEdges(Song &fromSong, const int &toSongEstimateIndex, vector<Song>
 
 vector<string> Song::recommendPlayList(vector<Song> &userList, vector<Song> &dataBase, vector<string> &newRecommendations) {
     vector<std::string> topics = {"acousticness", "danceability", "duration_ms",
-                            "energy", "instrumentalness", "key", "liveliness", "loudness", "speechiness", "tempo", "valence"};
+                            "energy", "instrumentalness", "key", "liveness", "loudness", "speechiness", "tempo", "valence"};
 
     for(string& topic : topics) {
-        auto start = chrono::high_resolution_clock::now();
-        cout << topic << " Sort started. " ;
-//        dataBase = Song::quickSort(dataBase,topic);
-//        dataBase = Song::mergeSort(dataBase,topic);
-
         //need to use standard sorting as our sorts take too long for users ~30 seconds per sort for merge, 2 - 1 min per sort for quicksort
-        sort(dataBase.begin(), dataBase.end(), [topic](const Song& lhs, const Song& rhs) {
-            double lhsValue = stod(lhs.attributeVals.at(topic));
-            double rhsValue = stod(rhs.attributeVals.at(topic));
-            return lhsValue < rhsValue;
-        });
-        auto end = chrono::high_resolution_clock::now();
-        auto duration = chrono::duration_cast<chrono::microseconds>(end - start);
-        cout << "Sort finished. Time taken in seconds: " << duration.count()/1000000.0 << endl;
+        standardSort(dataBase,topic);
 
         //add edges between userlist and database
-        for (Song &mySong: userList) {
-            int songIndex = Song::binarySearch(dataBase, topic, mySong.attributeVals[topic]);
-            Song::addEdges(mySong, songIndex, dataBase);
+        for (Song &userSong: userList) {
+            int songIndex = Song::binarySearch(dataBase, topic, userSong.attributeVals[topic]);
+            Song::addEdges(userSong, songIndex, dataBase);
         }
     }
 

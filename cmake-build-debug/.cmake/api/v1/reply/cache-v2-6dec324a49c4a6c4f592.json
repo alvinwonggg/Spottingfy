@@ -1303,7 +1303,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "[C:/msys64/mingw64/lib/libcurl.dll.a][C:/msys64/mingw64/include][c ][v8.4.0()]"
+			"value" : "[C:/msys64/mingw64/lib/libcurl.dll.a][C:/msys64/mingw64/include][c ][v8.5.0()]"
 		},
 		{
 			"name" : "PKG_CONFIG_ARGN",

@@ -426,7 +426,7 @@ CURL_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CURL_LIBRARY_RELEASE
 CURL_LIBRARY_RELEASE-ADVANCED:INTERNAL=1
 //Details about finding CURL
-FIND_PACKAGE_MESSAGE_DETAILS_CURL:INTERNAL=[C:/msys64/mingw64/lib/libcurl.dll.a][C:/msys64/mingw64/include][c ][v8.4.0()]
+FIND_PACKAGE_MESSAGE_DETAILS_CURL:INTERNAL=[C:/msys64/mingw64/lib/libcurl.dll.a][C:/msys64/mingw64/include][c ][v8.5.0()]
 //ADVANCED property for variable: PKG_CONFIG_ARGN
 PKG_CONFIG_ARGN-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: PKG_CONFIG_EXECUTABLE
